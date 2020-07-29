@@ -46,6 +46,7 @@ export class AvtaleGiroClient {
 		const client = await this.client;
 		client.setSecurity(new soap.WSSecurityCert(privCert, pubCert, ""));
 		
+		console.log(`[${new Date()}]: Sending getAtgMandate`);
 		return client.getAtgMandateAsync({
 			auditInformation: {
 				messageIdentifier: messageId
@@ -57,7 +58,7 @@ export class AvtaleGiroClient {
 			
 			return response.data;
 		}).catch((err: any) => {
-			console.log("failed to fetch mandate:" + err);
+			console.log(`[${new Date()}]: failed to fetch mandate:` + err);
 
 			return undefined;
 		});
