@@ -1,0 +1,1138 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="wsdl-viewer.xsl" ?>
+<wsdl:definitions name="efaktura-atg" targetNamespace="https://efaktura-services.nets.no/efaktura-atg-service/v1/"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+	xmlns:tns="https://efaktura-services.nets.no/efaktura-atg-service/v1/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy">
+	<wsp:Policy wsu:Id="UsernameToken"
+		xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+		xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+		<wsp:ExactlyOne>
+			<wsp:All>
+				<sp:SupportingTokens>
+					<wsp:Policy>
+						<sp:UsernameToken sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
+							<wsp:Policy>
+								<sp:WssUsernameToken10/>
+							</wsp:Policy>
+						</sp:UsernameToken>
+					</wsp:Policy>
+				</sp:SupportingTokens>
+			</wsp:All>
+		</wsp:ExactlyOne>
+	</wsp:Policy>
+	<wsdl:types>
+		<xsd:schema targetNamespace="https://efaktura-services.nets.no/efaktura-atg-service/v1/">
+			<xsd:simpleType name="eFakturaUrlType">
+				<xsd:annotation>
+					<xsd:documentation>URL to where the eFaktura invoice is located </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="255"/>
+					<xsd:minLength value="1"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="atgAbbreviatedNameType">
+				<xsd:annotation>
+					<xsd:documentation> The field may be used to inform payer about the AvtaleGiro payment. The external reference will be transferred to payer’s statement and AvtaleGiro info. The external reference will override the set text on payer’s regular payment assignment. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="10"/>
+					<xsd:minLength value="1"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="atgExternalReferenceType">
+				<xsd:annotation>
+					<xsd:documentation> The abbreviated name for the AvtaleGiro payer. The field should be filled in to make identification of any denied due payments easier. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="25"/>
+					<xsd:minLength value="1"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="atgNotificationTextType">
+				<xsd:annotation>
+					<xsd:documentation> Notification text for AvtaleGiro. Max length 3360, but should be divided in 80 character lines and maximum 42 lines. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="3360"/>
+					<xsd:minLength value="0"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="brandNameType">
+				<xsd:annotation>
+					<xsd:documentation> Name that is shown to the receiver of the eFaktura </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="40"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="organizationNumberType">
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="9"/>
+					<xsd:minLength value="9"/>
+					<xsd:pattern value="[0-9]{9}"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="postalCodeType">
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="10"/>
+					<xsd:minLength value="4"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="postalCityType">
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="30"/>
+					<xsd:minLength value="1"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="countryCodeType">
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="2"/>
+					<xsd:minLength value="2"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="accountNumberType">
+				<xsd:annotation>
+					<xsd:documentation> The account number that the issuer will be credited. Must be a Norwegian account number with 11 digits </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:length value="11"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="messageIdentifierType">
+				<xsd:annotation>
+					<xsd:documentation> A unique identifier for a request/response message pair used for logging </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:minLength value="5"/>
+					<xsd:maxLength value="50"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="rejectionTextType">
+				<xsd:annotation>
+					<xsd:documentation> The reason why something was rejected </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="2000"/>
+					<xsd:minLength value="1"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="rejectionCodeType">
+				<xsd:annotation>
+					<xsd:documentation> The reason why something was rejected, as a code </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="4"/>
+					<xsd:minLength value="1"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="efakturaStatusType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="NOT_AN_EFAKTURA_TRANSACTION"/>
+					<xsd:enumeration value="IN_PROGRESS"/>
+					<xsd:enumeration value="CANCELLED"/>
+					<xsd:enumeration value="REJECTED"/>
+					<xsd:enumeration value="STOPPED"/>
+					<xsd:enumeration value="ACCEPTED"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="efakturaShipmentCancellationStatusType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="NO_EFAKTURA_IN_SHIPMENT"/>
+					<xsd:enumeration value="CANCELLATION_REQUESTED"/>
+					<xsd:enumeration value="ALREADY_CANCELLED"/>
+					<xsd:enumeration value="NOT_FOUND"/>
+					<xsd:enumeration value="PROCESSING_IN_PROGRESS-TRY_LATER"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="atgShipmentCancellationStatusType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="NO_ATG_IN_SHIPMENT"/>
+					<xsd:enumeration value="CANCELLATION_REQUESTED"/>
+					<xsd:enumeration value="NOT_ALLOWED"/>
+					<xsd:enumeration value="NOT_FOUND"/>
+					<xsd:enumeration value="PROCESSING_IN_PROGRESS-TRY_LATER"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="efakturaTransactionCancellationStatusType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="NOT_AN_EFAKTURA_TRANSACTION"/>
+					<xsd:enumeration value="CANCELLATION_REQUESTED"/>
+					<xsd:enumeration value="ALREADY_CANCELLED"/>
+					<xsd:enumeration value="NOT_FOUND"/>
+					<xsd:enumeration value="PROCESSING_IN_PROGRESS-TRY_LATER"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="atgTransactionCancellationStatusType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="NOT_AN_ATG_TRANSACTION"/>
+					<xsd:enumeration value="CANCELLATION_REQUESTED"/>
+					<xsd:enumeration value="NOT_ALLOWED"/>
+					<xsd:enumeration value="NOT_FOUND"/>
+					<xsd:enumeration value="PROCESSING_IN_PROGRESS-TRY_LATER"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="atgStatusType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="NOT_AN_ATG_TRANSACTION"/>
+					<xsd:enumeration value="EXTERNAL_ATG"/>
+					<xsd:enumeration value="IN_PROGRESS"/>
+					<xsd:enumeration value="RECEIVED"/>
+					<xsd:enumeration value="REJECTED"/>
+					<xsd:enumeration value="PROCESSING"/>
+					<xsd:enumeration value="PROCESSED"/>
+					<xsd:enumeration value="PROCESSED_WITH_WARNING"/>
+					<xsd:enumeration value="SENT_TO_BDS"/>
+					<xsd:enumeration value="CANCELLATION_RECEIVED"/>
+					<xsd:enumeration value="CANCELLATION_VALIDATED"/>
+					<xsd:enumeration value="CANCELLATION_PROCESSED"/>
+					<xsd:enumeration value="CANCELLATION_PROCESSING"/>
+					<xsd:enumeration value="CANCELLATION_REJECTED"/>
+					<xsd:enumeration value="CANCELLATION_SENT_TO_BDS"/>
+					<xsd:enumeration value="CANCELLATION_REJECTED_BY_BDS"/>
+					<xsd:enumeration value="CANCELLATION_ACCEPTED_BY_BDS"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="efakturaIdentifierResultType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="UNIQUE_RECEIVER_FOUND">
+						<xsd:annotation>
+							<xsd:documentation> The eFaktura receiver is found in the receiver register </xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="RECEIVER_NOT_FOUND">
+						<xsd:annotation>
+							<xsd:documentation> The eFaktura receiver is not found in the receiver register </xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="LOOKUP_KEY_MISSING_DATA">
+						<xsd:annotation>
+							<xsd:documentation> Missing input data on lookup key </xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="MULTIPLE_RECEIVERS">
+						<xsd:annotation>
+							<xsd:documentation> Multiple receivers found for the given details. More info is needed to find an exact match. </xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="socialSecurityNumberType">
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="11"/>
+					<xsd:minLength value="11"/>
+					<xsd:pattern value="[0-9]{11}"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="eFakturaIdentifierType">
+				<xsd:annotation>
+					<xsd:documentation> The efakturaIdentifier of the receiver - the unique efaktura address for this receiver. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="9"/>
+					<xsd:minLength value="9"/>
+					<xsd:pattern value="[0-9]{9}"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="eFakturaReferenceType">
+				<xsd:annotation>
+					<xsd:documentation> The customer agreement reference (eFakturareferanse) of the receiver, used in the agreement between eFaktura issuer and receiver. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="32"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="emailType">
+				<xsd:annotation>
+					<xsd:documentation> A valid email address - used for alias. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:minLength value="5"/>
+					<xsd:maxLength value="100"/>
+					<xsd:pattern value="[^@]+@[^\.]+\..+"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="telephoneType">
+				<xsd:annotation>
+					<xsd:documentation> A valid phone number - used for alias. Prefixed with country code (i.e. +4799999999). </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:minLength value="6"/>
+					<xsd:maxLength value="16"/>
+					<xsd:pattern value="\+\d+"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="providerIdType">
+				<xsd:restriction base="xsd:string">
+					<xsd:minLength value="9"/>
+					<xsd:maxLength value="9"/>
+					<xsd:pattern value="[0-9]{9}"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="uuidType">
+				<xsd:annotation>
+					<xsd:documentation> A unique reference - UUID </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="36"/>
+					<xsd:minLength value="36"/>
+					<xsd:pattern value="[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="addressLineType">
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="50"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="shipmentEfakturaStatusType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="IN_PROGRESS">
+						<xsd:annotation>
+							<xsd:documentation> Processing of the shipment is in progress </xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="PROCESSED">
+						<xsd:annotation>
+							<xsd:documentation> Processing of the shipment is finished </xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="STOPPED">
+						<xsd:annotation>
+							<xsd:documentation> Processing of the shipment is stopped </xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="NO_EFAKTURA_IN_SHIPMENT">
+						<xsd:annotation>
+							<xsd:documentation> The shipment has no eFakturas </xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="shipmentAtgStatusType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="NO_ATG_IN_SHIPMENT"/>
+					<xsd:enumeration value="IN_PROGRESS"/>
+					<xsd:enumeration value="RECEIVED"/>
+					<xsd:enumeration value="REJECTED"/>
+					<xsd:enumeration value="PROCESSING"/>
+					<xsd:enumeration value="PROCESSED"/>
+					<xsd:enumeration value="PROCESSED_WITH_WARNING"/>
+					<xsd:enumeration value="SENT_TO_BDS"/>
+					<xsd:enumeration value="CANCELLATION_RECEIVED"/>
+					<xsd:enumeration value="CANCELLATION_VALIDATED"/>
+					<xsd:enumeration value="CANCELLATION_PROCESSED"/>
+					<xsd:enumeration value="CANCELLATION_PROCESSING"/>
+					<xsd:enumeration value="CANCELLATION_REJECTED"/>
+					<xsd:enumeration value="CANCELLATION_SENT_TO_BDS"/>
+					<xsd:enumeration value="CANCELLATION_REJECTED_BY_BDS"/>
+					<xsd:enumeration value="CANCELLATION_ACCEPTED_BY_BDS"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="paymentType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="EFAKTURA">
+						<xsd:annotation>
+							<xsd:documentation> Payment type for eFaktura only. efakturaInfo must be added the the transaction. </xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="EFAKTURA_AND_AVTALEGIRO">
+						<xsd:annotation>
+							<xsd:documentation> Payment type for both eFaktura and AvtaleGiro combined. atgInfo and efakturaInfo must be added to the transaction. </xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="EFAKTURA_AND_EXTERNAL_AVTALEGIRO">
+						<xsd:annotation>
+							<xsd:documentation> Payment type for both eFaktura and AvtaleGiro combined, but with the AvtaleGiro provided by itself. </xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="AVTALEGIRO">
+						<xsd:annotation>
+							<xsd:documentation> Payment type for AvtaleGiro only. atgInfo must be added to the transaction. </xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="documentType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="INVOICE"/>
+					<xsd:enumeration value="CREDIT_NOTE"/>
+					<xsd:enumeration value="REMINDER"/>
+					<xsd:enumeration value="COLLECTION_NOTICE"/>
+					<xsd:enumeration value="DUNNING"/>
+					<xsd:enumeration value="PAYMENT_REQUEST"/>
+					<xsd:enumeration value="ENFORCEMENT_WARNING"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="simpleAmountType">
+				<xsd:annotation>
+					<xsd:documentation> The amount represented as a positive number with two decimals. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:decimal">
+					<xsd:fractionDigits value="2"/>
+					<xsd:minInclusive value="0.00"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="kidType">
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="25"/>
+					<xsd:minLength value="2"/>
+					<xsd:pattern value="\d*"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="transactionsCountType">
+				<xsd:restriction base="xsd:int"/>
+			</xsd:simpleType>
+			<xsd:simpleType name="nameType">
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="50"/>
+					<xsd:minLength value="1"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="efakturaReferenceType">
+				<xsd:annotation>
+					<xsd:documentation> The eFaktura reference of the receiver </xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:maxLength value="32"/>
+					<xsd:minLength value="1"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="encryptedSignatureType">
+				<xsd:restriction base="xsd:string">
+					<xsd:pattern value="%3CMSG.*%3E"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="decryptedSignatureType">
+				<xsd:restriction base="xsd:string"/>
+			</xsd:simpleType>
+			<xsd:simpleType name="errorCodeType">
+				<xsd:restriction base="xsd:int">
+					<xsd:minInclusive value="3000"/>
+					<xsd:maxExclusive value="3999"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:complexType name="AuditInformationType">
+				<xsd:annotation>
+					<xsd:documentation> Information used for auditing and logging messages. The service replies with the same messageIdentifier sent in. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence>
+					<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="EfakturaTransactionStatusType">
+				<xsd:sequence>
+					<xsd:element name="status" type="tns:efakturaStatusType"/>
+					<xsd:element name="rejectionCode" type="tns:rejectionCodeType" minOccurs="0"/>
+					<xsd:element name="rejectionText" type="tns:rejectionTextType" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="AtgTransactionStatusType">
+				<xsd:sequence>
+					<xsd:element name="status" type="tns:atgStatusType"/>
+					<xsd:element name="code" type="tns:rejectionCodeType" minOccurs="0"/>
+					<xsd:element name="text" type="tns:rejectionTextType" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="EfakturaIssuerResponseType">
+				<xsd:annotation>
+					<xsd:documentation> The result of issuer lookup in the getEfakturaIdentifier call. It returns if issuer is blocked by receiver, if issuer has eFaktura agreement with receiver, and if found a valid eFaktura reference is returned </xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence>
+					<xsd:element name="blockedByReceiver" type="xsd:boolean"/>
+					<xsd:element name="hasEfakturaAgreement" type="xsd:boolean"/>
+					<xsd:element name="efakturaReferences" type="tns:eFakturaReferenceType" minOccurs="0" maxOccurs="unbounded"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="EfakturaIdentifierResponseType">
+				<xsd:annotation>
+					<xsd:documentation> Result of efakturaidentifier lookup. The lookup-key is also returned to pair the efaktura identifier with the correct receiver. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence>
+					<xsd:element name="responseResult" type="tns:efakturaIdentifierResultType"/>
+					<xsd:element name="autoAcceptEfaktura" type="xsd:boolean">
+						<xsd:annotation>
+							<xsd:documentation> If all eFaktura agreements should be accepted automatically for this eFaktura receiver. </xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="efakturaIdentifier" type="tns:eFakturaIdentifierType" minOccurs="0"/>
+					<xsd:element name="efakturaIdentifierKey" type="tns:EfakturaIdentifierKeyType"/>
+					<xsd:element name="issuerResponse" type="tns:EfakturaIssuerResponseType" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="EfakturaIdentifiersResponseType">
+				<xsd:annotation>
+					<xsd:documentation> List with efakturaidentifier-keys and efakturaidentifier if found </xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence>
+					<xsd:element name="efakturaIdentifierResponse" type="tns:EfakturaIdentifierResponseType" maxOccurs="1000"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="EfakturaReferenceAndContentProviderType">
+				<xsd:sequence>
+					<xsd:element name="efakturaReference" type="tns:eFakturaReferenceType"/>
+					<xsd:element name="contentProviderId" type="tns:providerIdType"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="FullNameType">
+				<xsd:annotation>
+					<xsd:documentation> The name used to search for receiver to get efaktura identifier. Both elements must match those registered on the receiver </xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence>
+					<xsd:element name="firstName" type="tns:nameType" minOccurs="0"/>
+					<xsd:element name="lastName" type="tns:nameType"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="AddressType">
+				<xsd:annotation>
+					<xsd:documentation> The address used to search for receiver to get efaktura identifier. All elements must match those registered on the receiver </xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence>
+					<xsd:element name="addressLine1" type="tns:addressLineType" minOccurs="0"/>
+					<xsd:element name="addressLine2" type="tns:addressLineType" minOccurs="0"/>
+					<xsd:element name="postalCode" type="tns:postalCodeType" minOccurs="0"/>
+					<xsd:element name="city" type="tns:postalCityType" minOccurs="0"/>
+					<xsd:element name="countryCode" type="tns:countryCodeType" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="EfakturaIdentifierKeyType">
+				<xsd:annotation>
+					<xsd:documentation> Contains the keys used to search for a unique receiver to get the eFaktura identifier. The following rules apply: 1. Search can be made on social security number, organization number, efaktura identifier or eFakturaReferenceAndContentProvider as single key. 2. If email alias or phone alias or date of birth is provided at least two of them must match. 3. If only one of date of birth, email alias or phone alias is provided, one of either name, address or postal code must match. 4. If none of date of birth, email alias or phone alias is given all of name, address and postal code must match. 5. For name and address it is allowed for search where the text is a part of the given field 6. First and last name is also to be switched, meaning a first name search will also try to search in the last name column. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence>
+					<xsd:element name="efakturaIdentifier" type="tns:eFakturaIdentifierType" minOccurs="0"/>
+					<xsd:choice minOccurs="0">
+						<xsd:element name="socialSecurityNumber" type="tns:socialSecurityNumberType"/>
+						<xsd:element name="organizationNumber" type="tns:organizationNumberType"/>
+					</xsd:choice>
+					<xsd:element name="telephoneAlias" type="tns:telephoneType" minOccurs="0"/>
+					<xsd:element name="emailAlias" type="tns:emailType" minOccurs="0"/>
+					<xsd:element name="name" type="tns:FullNameType" minOccurs="0"/>
+					<xsd:element name="address" type="tns:AddressType" minOccurs="0"/>
+					<xsd:element name="efakturaIssuer" type="tns:organizationNumberType" minOccurs="0"/>
+					<xsd:element name="dateOfBirth" type="xsd:date" minOccurs="0"/>
+					<xsd:element name="efakturaReferenceAndContentProvider" type="tns:EfakturaReferenceAndContentProviderType" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="EfakturaIdentifiersKeyType">
+				<xsd:sequence>
+					<xsd:element name="efakturaIdentifierKey" type="tns:EfakturaIdentifierKeyType" maxOccurs="1000"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="TransactionsType">
+				<xsd:annotation>
+					<xsd:documentation> Allows up to a 1000 transactions per shipment. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence>
+					<xsd:element name="transactions" type="tns:TransactionType" maxOccurs="1000"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="TransactionType">
+				<xsd:sequence>
+					<xsd:element name="transactionId" type="tns:uuidType"/>
+					<xsd:element name="paymentType" type="tns:paymentType"/>
+					<xsd:element name="documentType" type="tns:documentType"/>
+					<xsd:element name="kid" type="tns:kidType" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation> Mandatory for ATGs, but not for eFaktruas </xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="accountNumber" type="tns:accountNumberType"/>
+					<xsd:element name="amount" type="tns:simpleAmountType"/>
+					<xsd:element name="dueDate" type="xsd:date"/>
+					<xsd:element name="efakturaInfo" type="tns:EfakturaType" minOccurs="0"/>
+					<xsd:element name="atgInfo" type="tns:AtgType" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="AtgType">
+				<xsd:annotation>
+					<xsd:documentation> Must be added for ATGs </xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence>
+					<xsd:element name="atgNotification" type="xsd:boolean"/>
+					<xsd:element name="atgNotificationText" type="tns:atgNotificationTextType" minOccurs="0"/>
+					<xsd:element name="atgAbbreviatedName" type="tns:atgAbbreviatedNameType" minOccurs="0"/>
+					<xsd:element name="atgExternalReference" type="tns:atgExternalReferenceType" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="EfakturaType">
+				<xsd:annotation>
+					<xsd:documentation> Must be added for eFakturas </xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence>
+					<xsd:choice>
+						<xsd:element name="efakturaIdentifier" type="tns:eFakturaIdentifierType"/>
+						<xsd:element name="socialSecurityNumber" type="tns:socialSecurityNumberType"/>
+						<xsd:element name="eFakturaReference" type="tns:efakturaReferenceType"/>
+					</xsd:choice>
+					<xsd:element name="minimumAmount" type="tns:simpleAmountType" minOccurs="0"/>
+					<xsd:element name="brandName" type="tns:brandNameType"/>
+					<xsd:element name="eFakturaUrl" type="tns:eFakturaUrlType"/>
+					<xsd:element name="collectionNoticeNotification" type="tns:CollectionNoticeNotification" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="MandateInfoType">
+				<xsd:sequence>
+					<xsd:element name="kid" type="tns:kidType"/>
+					<xsd:element name="creditAccount" type="tns:accountNumberType"/>
+					<xsd:element name="notification" type="xsd:boolean"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="TransactionStatusesType">
+				<xsd:sequence>
+					<xsd:element name="transactionStatus" type="tns:TransactionStatusType" maxOccurs="1000"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="TransactionStatusType">
+				<xsd:sequence>
+					<xsd:element name="transactionId" type="tns:uuidType"/>
+					<xsd:element name="efakturaTransactionStatus" type="tns:EfakturaTransactionStatusType" minOccurs="0"/>
+					<xsd:element name="atgTransactionStatus" type="tns:AtgTransactionStatusType" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="BlackListResponseType">
+				<xsd:sequence>
+					<xsd:element name="identifier" type="xsd:string"/>
+					<xsd:element name="identifierType" type="xsd:string"/>
+					<xsd:element name="status" type="xsd:string"/>
+					<xsd:element name="activationDate" type="xsd:date"/>
+					<xsd:element name="deActivationDate" type="xsd:date" minOccurs="0"/>
+					<xsd:element name="blackListType" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ShipmentsResponseType">
+				<xsd:sequence>
+					<xsd:element name="id" type="tns:uuidType"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="BlackListResponsesType">
+				<xsd:sequence>
+					<xsd:element name="blackListResponseType" type="tns:BlackListResponseType" minOccurs="0" maxOccurs="1000"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="ShipmentsResponsesType">
+				<xsd:sequence>
+					<xsd:element name="shipmentsResponseType" type="tns:ShipmentsResponseType" minOccurs="0" maxOccurs="unbounded"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="CollectionNoticeNotification">
+				<xsd:annotation>
+					<xsd:documentation> Forced notifications for collection notices. Only valid for collection notice. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence>
+					<xsd:element name="email" type="tns:emailType" minOccurs="0"/>
+					<xsd:element name="mobilePhone" type="tns:telephoneType" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:element name="GetShipmentStatusRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="auditInformation" type="tns:AuditInformationType"/>
+						<xsd:element name="shipmentId" type="tns:uuidType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetTransactionStatusRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="auditInformation" type="tns:AuditInformationType"/>
+						<xsd:element name="transactionId" type="tns:uuidType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetTransactionStatusResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+						<xsd:element name="transactionStatus" type="tns:TransactionStatusType"/>
+						<xsd:element name="transaction" type="tns:TransactionType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetEfakturaIdentifiersRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="auditInformation" type="tns:AuditInformationType"/>
+						<xsd:element name="getEfakturaIdentifiersKey" type="tns:EfakturaIdentifiersKeyType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetEfakturaIdentifiersResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+						<xsd:element name="getEfakturaIdentifiersResponse" type="tns:EfakturaIdentifiersResponseType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetAtgMandateRequest">
+				<xsd:annotation>
+					<xsd:documentation> Check if a mandate exists. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="auditInformation" type="tns:AuditInformationType"/>
+						<xsd:element name="kid" type="tns:kidType"/>
+						<xsd:element name="creditAccount" type="tns:accountNumberType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetAtgMandateResponse">
+				<xsd:annotation>
+					<xsd:documentation> Return the mandate if exists, else mandate will be null. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+						<xsd:element name="mandate" type="tns:MandateInfoType" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="CancelShipmentRequest">
+				<xsd:annotation>
+					<xsd:documentation> Cancel all transactions in shipment. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="auditInformation" type="tns:AuditInformationType"/>
+						<xsd:element name="shipmentId" type="tns:uuidType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="CancelShipmentResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+						<xsd:element name="shipmentId" type="tns:uuidType"/>
+						<xsd:element name="efakturaStatus" type="tns:efakturaShipmentCancellationStatusType"/>
+						<xsd:element name="atgStatus" type="tns:atgShipmentCancellationStatusType"/>
+						<xsd:element name="atgCancellationMessage" type="xsd:string" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="CancelTransactionRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="auditInformation" type="tns:AuditInformationType"/>
+						<xsd:element name="transactionId" type="tns:uuidType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="CancelTransactionResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+						<xsd:element name="transactionId" type="tns:uuidType"/>
+						<xsd:element name="efakturaStatus" type="tns:efakturaTransactionCancellationStatusType"/>
+						<xsd:element name="atgStatus" type="tns:atgTransactionCancellationStatusType"/>
+						<xsd:element name="atgCancellationMessage" type="xsd:string" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="AddShipmentRequest">
+				<xsd:annotation>
+					<xsd:documentation> Add a new shipment with transactions. Use getShipmentStatus or getTransactionStatus to check the status. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="auditInformation" type="tns:AuditInformationType"/>
+						<xsd:element name="shipmentId" type="tns:uuidType"/>
+						<xsd:element name="issuer" type="tns:organizationNumberType"/>
+						<xsd:element name="transactions" type="tns:TransactionsType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="AddShipmentResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+						<xsd:element name="noOfTransactions" type="tns:transactionsCountType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetShipmentStatusResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+						<xsd:element name="shipmentId" type="tns:uuidType"/>
+						<xsd:element name="efakturaShipmentStatus" type="tns:shipmentEfakturaStatusType"/>
+						<xsd:element name="atgShipmentStatus" type="tns:shipmentAtgStatusType"/>
+						<xsd:element name="transactionCount" type="xsd:int"/>
+						<xsd:element name="efakturaTransactionCount" type="xsd:int"/>
+						<xsd:element name="atgTransactionCount" type="xsd:int"/>
+						<xsd:element name="transactionsStatuses" type="tns:TransactionStatusesType" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ServerFault">
+				<xsd:annotation>
+					<xsd:documentation> Indicates an internal server error. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ValidationFault">
+				<xsd:annotation>
+					<xsd:documentation> Indicates that the client has sent an invalid request. </xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="errorCode" type="tns:errorCodeType"/>
+						<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ValidateSecuritySignatureRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="auditInformation" type="tns:AuditInformationType"/>
+						<xsd:element name="encryptedSignature" type="tns:encryptedSignatureType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ValidateSecuritySignatureResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+						<xsd:element name="decryptedSignature" type="tns:decryptedSignatureType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetBlackListRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="auditInformation" type="tns:AuditInformationType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetBlackListResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+						<xsd:element name="blackListResponses" type="tns:BlackListResponsesType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetShipmentsRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="auditInformation" type="tns:AuditInformationType"/>
+						<xsd:element name="from" type="xsd:dateTime"/>
+						<xsd:element name="to" type="xsd:dateTime"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="GetShipmentsResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="messageIdentifier" type="tns:messageIdentifierType"/>
+						<xsd:element name="numberOfShipmentsFound" type="xsd:int"/>
+						<xsd:element name="shipmentsResponses" type="tns:ShipmentsResponsesType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="addShipment">
+		<wsdl:part name="addShipment" element="tns:AddShipmentRequest"/>
+	</wsdl:message>
+	<wsdl:message name="addShipmentResponse">
+		<wsdl:part name="addShipmentResponse" element="tns:AddShipmentResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getShipmentStatus">
+		<wsdl:part name="getShipmentStatus" element="tns:GetShipmentStatusRequest"/>
+	</wsdl:message>
+	<wsdl:message name="getShipmentStatusResponse">
+		<wsdl:part name="getShipmentStatusResponse" element="tns:GetShipmentStatusResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getTransactionStatus">
+		<wsdl:part name="getTransactionStatus" element="tns:GetTransactionStatusRequest"/>
+	</wsdl:message>
+	<wsdl:message name="getTransactionStatusResponse">
+		<wsdl:part name="getTransactionStatusResponse" element="tns:GetTransactionStatusResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getAtgMandateRequest">
+		<wsdl:part name="getAtgMandateRequest" element="tns:GetAtgMandateRequest"/>
+	</wsdl:message>
+	<wsdl:message name="getAtgMandateResponse">
+		<wsdl:part name="getAtgMandateResponse" element="tns:GetAtgMandateResponse"/>
+	</wsdl:message>
+	<wsdl:message name="cancelShipment">
+		<wsdl:part name="cancelShipment" element="tns:CancelShipmentRequest"/>
+	</wsdl:message>
+	<wsdl:message name="cancelShipmentResponse">
+		<wsdl:part name="cancelShipmentResponse" element="tns:CancelShipmentResponse"/>
+	</wsdl:message>
+	<wsdl:message name="cancelTransaction">
+		<wsdl:part name="cancelTransaction" element="tns:CancelTransactionRequest"/>
+	</wsdl:message>
+	<wsdl:message name="cancelTransactionResponse">
+		<wsdl:part name="cancelTransactionResponse" element="tns:CancelTransactionResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getEfakturaIdentifiers">
+		<wsdl:part name="getEfakturaIdentifiers" element="tns:GetEfakturaIdentifiersRequest"/>
+	</wsdl:message>
+	<wsdl:message name="getEfakturaIdentifiersResponse">
+		<wsdl:part name="getEfakturaIdentifiersResponse" element="tns:GetEfakturaIdentifiersResponse"/>
+	</wsdl:message>
+	<wsdl:message name="validateSecuritySignature">
+		<wsdl:part name="validateSecuritySignature" element="tns:ValidateSecuritySignatureRequest"/>
+	</wsdl:message>
+	<wsdl:message name="validateSecuritySignatureResponse">
+		<wsdl:part name="validateSecuritySignatureResponse" element="tns:ValidateSecuritySignatureResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getBlackList">
+		<wsdl:part name="getBlackList" element="tns:GetBlackListRequest"/>
+	</wsdl:message>
+	<wsdl:message name="getBlackListResponse">
+		<wsdl:part name="getBlackListResponse" element="tns:GetBlackListResponse"/>
+	</wsdl:message>
+	<wsdl:message name="getShipments">
+		<wsdl:part name="getShipments" element="tns:GetShipmentsRequest"/>
+	</wsdl:message>
+	<wsdl:message name="getShipmentsResponse">
+		<wsdl:part name="getShipmentsResponse" element="tns:GetShipmentsResponse"/>
+	</wsdl:message>
+	<wsdl:message name="validationFault">
+		<wsdl:part name="validationFault" element="tns:ValidationFault"/>
+	</wsdl:message>
+	<wsdl:message name="serverFault">
+		<wsdl:part name="serverFault" element="tns:ServerFault"/>
+	</wsdl:message>
+	<wsdl:portType name="EfakturaAtgPortType">
+		<wsdl:operation name="getEfakturaIdentifiers">
+			<wsdl:documentation> Returns efakturaIdentifier and auto accept agreement if the receiver is found by efaktura identifier, personalnumber, organization number, phone, email, name, or address. </wsdl:documentation>
+			<wsdl:input message="tns:getEfakturaIdentifiers"/>
+			<wsdl:output message="tns:getEfakturaIdentifiersResponse"/>
+			<wsdl:fault name="validationFault" message="tns:validationFault"/>
+			<wsdl:fault name="serverFault" message="tns:serverFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="addShipment">
+			<wsdl:documentation> Creates a shipment with transactions (eFaktura, AvtaleGiro or a combination). Possible validation error codes from operation: 3002 - Shipment id already exists 3003 - Transaction id already exists 3010 - ATG info is missing for an ATG transaction 3011 - eFaktua info is missing for an eFaktura transaction 3020 - KID is missing for an ATG transaction 3021 - ATG transaction is not document type INVOICE 3100 - Document type not implemented (currently only INVOICE is allowed) 3101 - AvtaleGiro transactions are not allowed </wsdl:documentation>
+			<wsdl:input message="tns:addShipment"/>
+			<wsdl:output message="tns:addShipmentResponse"/>
+			<wsdl:fault name="validationFault" message="tns:validationFault"/>
+			<wsdl:fault name="serverFault" message="tns:serverFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="getShipmentStatus">
+			<wsdl:documentation> Get the status of a shipment. Possible validation error codes from operation: 3000 - Shipment not found </wsdl:documentation>
+			<wsdl:input message="tns:getShipmentStatus"/>
+			<wsdl:output message="tns:getShipmentStatusResponse"/>
+			<wsdl:fault name="validationFault" message="tns:validationFault"/>
+			<wsdl:fault name="serverFault" message="tns:serverFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="getTransactionStatus">
+			<wsdl:documentation> Get the status of a transaction. Possible validation error codes from operation: 3001 - Transaction not found </wsdl:documentation>
+			<wsdl:input message="tns:getTransactionStatus"/>
+			<wsdl:output message="tns:getTransactionStatusResponse"/>
+			<wsdl:fault name="validationFault" message="tns:validationFault"/>
+			<wsdl:fault name="serverFault" message="tns:serverFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="getAtgMandate">
+			<wsdl:documentation> Check if a mandate exists Possible validation error codes from operation: 3102 - Get mandate is currently disabled </wsdl:documentation>
+			<wsdl:input message="tns:getAtgMandateRequest"/>
+			<wsdl:output message="tns:getAtgMandateResponse"/>
+			<wsdl:fault name="validationFault" message="tns:validationFault"/>
+			<wsdl:fault name="serverFault" message="tns:serverFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="cancelShipment">
+			<wsdl:documentation> Cancel a shipment. Possible validation error codes from operation: 3000 - Shipment not found </wsdl:documentation>
+			<wsdl:input message="tns:cancelShipment"/>
+			<wsdl:output message="tns:cancelShipmentResponse"/>
+			<wsdl:fault name="validationFault" message="tns:validationFault"/>
+			<wsdl:fault name="serverFault" message="tns:serverFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="cancelTransaction">
+			<wsdl:documentation> Cancel a transaction. Possible validation error codes from operation: 3001 - Transaction not found </wsdl:documentation>
+			<wsdl:input message="tns:cancelTransaction"/>
+			<wsdl:output message="tns:cancelTransactionResponse"/>
+			<wsdl:fault name="validationFault" message="tns:validationFault"/>
+			<wsdl:fault name="serverFault" message="tns:serverFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="validateSecuritySignature">
+			<wsdl:documentation> Validates the given security signature and returns the decrypted value. Possible validation error codes from operation: 3030 - the signature has timed out 3031 - the signature is manipulated </wsdl:documentation>
+			<wsdl:input message="tns:validateSecuritySignature"/>
+			<wsdl:output message="tns:validateSecuritySignatureResponse"/>
+			<wsdl:fault name="validationFault" message="tns:validationFault"/>
+			<wsdl:fault name="serverFault" message="tns:serverFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="getBlackList">
+			<wsdl:documentation> Get black listed eFaktura issuers </wsdl:documentation>
+			<wsdl:input message="tns:getBlackList"/>
+			<wsdl:output message="tns:getBlackListResponse"/>
+			<wsdl:fault name="validationFault" message="tns:validationFault"/>
+			<wsdl:fault name="serverFault" message="tns:serverFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="getShipments">
+			<wsdl:documentation> Returns all shipment IDs sent in by the user within a time interval. Possible validation error codes from operation: 3040 - interval too long </wsdl:documentation>
+			<wsdl:input message="tns:getShipments"/>
+			<wsdl:output message="tns:getShipmentsResponse"/>
+			<wsdl:fault name="validationFault" message="tns:validationFault"/>
+			<wsdl:fault name="serverFault" message="tns:serverFault"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="EfakturaAtgSoapBinding" type="tns:EfakturaAtgPortType">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="getEfakturaIdentifiers">
+			<soap:operation soapAction="https://efaktura-services.nets.no/efaktura-atg-service/v1/getEfakturaIdentifiers"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="validationFault">
+				<soap:fault name="validationFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="serverFault">
+				<soap:fault name="serverFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="addShipment">
+			<soap:operation soapAction="https://efaktura-services.nets.no/efaktura-atg-service/v1/addShipment"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="validationFault">
+				<soap:fault name="validationFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="serverFault">
+				<soap:fault name="serverFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getShipmentStatus">
+			<soap:operation soapAction="https://efaktura-services.nets.no/efaktura-atg-service/v1/getShipmentStatus"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="validationFault">
+				<soap:fault name="validationFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="serverFault">
+				<soap:fault name="serverFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getTransactionStatus">
+			<soap:operation soapAction="https://efaktura-services.nets.no/efaktura-atg-service/v1/getTransactionStatus"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="validationFault">
+				<soap:fault name="validationFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="serverFault">
+				<soap:fault name="serverFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getAtgMandate">
+			<soap:operation soapAction="https://efaktura-services.nets.no/efaktura-atg-service/v1/getAtgMandate"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="validationFault">
+				<soap:fault name="validationFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="serverFault">
+				<soap:fault name="serverFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="cancelShipment">
+			<soap:operation soapAction="https://efaktura-services.nets.no/efaktura-atg-service/v1/cancelShipment"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="validationFault">
+				<soap:fault name="validationFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="serverFault">
+				<soap:fault name="serverFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="cancelTransaction">
+			<soap:operation soapAction="https://efaktura-services.nets.no/efaktura-atg-service/v1/cancelTransactions"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="validationFault">
+				<soap:fault name="validationFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="serverFault">
+				<soap:fault name="serverFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="validateSecuritySignature">
+			<soap:operation soapAction="https://efaktura-services.nets.no/efaktura-atg-service/v1/validateSecuritySignature"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="validationFault">
+				<soap:fault name="validationFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="serverFault">
+				<soap:fault name="serverFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getBlackList">
+			<soap:operation soapAction="https://efaktura-services.nets.no/efaktura-atg-service/v1/getBlackList"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="validationFault">
+				<soap:fault name="validationFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="serverFault">
+				<soap:fault name="serverFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="getShipments">
+			<soap:operation soapAction="https://efaktura-services.nets.no/efaktura-atg-service/v1/getShipments"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="validationFault">
+				<soap:fault name="validationFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="serverFault">
+				<soap:fault name="serverFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="EfakturaAtgService">
+		<wsdl:port name="EfakturaAtgPort" binding="tns:EfakturaAtgSoapBinding">
+			<soap:address location="https://efaktura-services.nets.no/efaktura-atg-service/v1/"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>
